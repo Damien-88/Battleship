@@ -276,6 +276,7 @@ class Board:
     def hit_miss(self, new_target):
 
         self.aim = new_target
+        area = 0
         there = False
 
         # Loop trough list of piece locations.
@@ -283,43 +284,21 @@ class Board:
             # Check if Piece is in Target location
             for l in loc:
                 if self.aim == l:
-                    # If it is Remove Space from hit_list.
+                    # If it is, Remove Space from hit_list.
+                    area = loc
                     there = True
                     loc.remove(l)
-                    print("Hit")
-                    # Find coinsiding Piece Remove Space from it's list.
-                    # Check if any Spaces are left for Piece. Call Sank if none
-                    if loc == 0:
-                        self.carrier.remove(self.aim)
-                        self.hit_dict["Carrier"].remove(self.aim)
-                        if len(self.carrier["Carrier"]) == 0:
-                            self.sank("Carrier")
-                    elif loc == 1:
-                        self.battleship.remove(self.aim)
-                        self.hit_dict["Battleship"].remove(self.aim)
-                        if len(self.battleship["Battleship"]) == 0:
-                            self.sank("Battleship")
-                    elif loc == 2:
-                        self.cruiser.remove(self.aim)
-                        self.hit_dict["Cruiser"].remove(self.aim)
-                        if len(self.cruiser["Cruiser"]) == 0:
-                            self.sank("Cruiser")
-                    elif loc == 3:
-                        self.submarine.remove(self.aim)
-                        self.hit_dict["Submarine"].remove(self.aim)
-                        if len(self.submarine["Submarine"]) == 0:
-                            self.sank("Submarine")
-                    elif loc == 4:
-                        self.destroyer.remove(self.aim)
-                        self.hit_dict["Destroyer"].remove(self.aim)
-                        if len(self.destroyer["Destroyer"]) == 0:
-                            self.sank("Destroyer")
-                    self.blowed_up()
                     break
-        if not there:
-                     print("Miss")
+        if there:
+            # Update Board. Call Hit functions
+            print("Hit")
+            self.blowed_up()
+            self.good_hit(area)
+
+        elif not there:
+             print("Miss")
     
-    # Method for Updating Board Layout with Affirmative Hits
+    # Method for Updating Board with Affirmative Hits
     def blowed_up(self):
 
         # Variable for Hit indication
@@ -349,34 +328,69 @@ class Board:
         
         # Update Display
         self.mark_panel()
+
+    # Method for handling Hits 
+    def good_hit (self, location):
+        # Find coinsiding Piece Remove Space from it's list.
+        if location == 0:
+            self.carrier.remove(self.aim)
+            self.hit_dict["Carrier"].remove(self.aim)
+        elif location == 1:
+            self.battleship.remove(self.aim)
+            self.hit_dict["Battleship"].remove(self.aim)
+        elif location == 2:
+            self.cruiser.remove(self.aim)
+            self.hit_dict["Cruiser"].remove(self.aim)
+        elif location == 3:
+            self.submarine.remove(self.aim)
+            self.hit_dict["Submarine"].remove(self.aim)
+        elif location == 4:
+            self.destroyer.remove(self.aim)
+            self.hit_dict["Destroyer"].remove(self.aim)
+        
+        # Check piece status 
+        self.check_status()
+    
+    # Method for checking Status of each piece
+    def check_status(self):
+
+        # If no spaces left Call Sank for that piece
+        if not any(self.carrier) and "Carrier" not in self.downed:
+            self.sank(1)
+        elif not any(self.battleship) and "Battleship" not in self.downed:
+            self.sank(2)
+        elif not any(self.cruiser) and "Cruiser" not in self.downed:
+            self.sank(3)
+        elif not any(self.submarine) and "Submarine" not in self.downed:
+            self.sank(4)
+        elif not any(self.destroyer) and "Destroyer" not in self.downed:
+            self.sank(5)
+
  
     # Method for handling Sunken Piece
     def sank(self, new_piece):
 
-        if new_piece == "Carrier":
+        if new_piece == 1:
             self.downed.append("Carrier")
-            print("\n" + self.attacker + " sunk " + self.defender + "'s Carrier!\n\n")
-        elif new_piece == "Battleship":
+            print("\n" + self.attacker + " sunk " + self.defender + "'s Carrier!\n")
+        elif new_piece == 2:
             self.downed.append("Battleship")
-            print("\n" + self.attacker + " sunk " + self.defender + "'s Battleship!\n\n")
-        elif new_piece == "Cruiser":
+            print("\n" + self.attacker + " sunk " + self.defender + "'s Battleship!\n")
+        elif new_piece == 3:
             self.downed.append("Cruiser")
-            print("\n" + self.attacker + " sunk " + self.defender + "'s Cruiser!\n\n")
-        elif new_piece == "Submarine":
+            print("\n" + self.attacker + " sunk " + self.defender + "'s Cruiser!\n")
+        elif new_piece == 4:
             self.downed.append("Submarine")
-            print("\n" + self.attacker + " sunk " + self.defender + "'s Submarine!\n\n")
-        elif new_piece == "Destroyer":
+            print("\n" + self.attacker + " sunk " + self.defender + "'s Submarine!\n")
+        elif new_piece == 5:
             self.downed.append("Destroyer")
-            print("\n" + self.attacker + " sunk " + self.defender + "'s Destroyer!\n\n")
-        
-        if len(self.downed) == 5:
-            self.game_over()
+            print("\n" + self.attacker + " sunk " + self.defender + "'s Destroyer!\n")
     
     # Method for handling Game Over
     def game_over(self):
 
         if len(self.downed) == 5:
-            print("\n" + self.attacker + " WINS")
+            print("\n" + self.attacker + " WINS \n\n")
             return False
         else:
             return True
@@ -443,10 +457,14 @@ while game_on:
     # Check Contact
     board_1.hit_miss(open_fire)
 
-    print("\n", board_1, "\n")
+    # Verification
+    #print("\n", board_1, "\n")
+    #print("\n", second, "\n")
 
     # Check for Game Over
-    game_on = board_2.game_over()
+    game_on = board_1.game_over()
+    if not game_on:
+        break
 
     # Display Defending Board
     print(board_2.layout)
@@ -457,11 +475,16 @@ while game_on:
     # Check Contact
     board_2.hit_miss(open_fire)
 
-    print("\n", board_2, "\n")
+    # Verification
+    #print("\n", board_2, "\n")
+    #print("\n", second, "\n")
 
     # Check for Game Over
-    game_on = board_1.game_over()
+    game_on = board_2.game_over()
+    if not game_on:
+        break
 
+# Quick Setup
 # a1, a2, a3, a4, a5
 # b7, c7, d7, e7
 # j9, j7, j6
