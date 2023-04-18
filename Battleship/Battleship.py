@@ -1,4 +1,6 @@
 import pandas as pd
+import os
+from time import sleep
 
 # Class that handles user interaction with each other and the board.;
 class Player:
@@ -54,11 +56,12 @@ class Player:
     def attack(self):
 
         index = 0
+        row = ""
         available = False
 
         while not available:
             # Take in coordinates for attack.
-            coordinates = input("\n" + self.name + " Enter the coordinates for your attack: ")
+            coordinates = input("\n\n\tEnter the coordinates for your attack: ")
             self.target = coordinates.capitalize()
             
             # Loop through available targets to check if available
@@ -72,10 +75,13 @@ class Player:
                     return self.target
                     
             if not available: # Show available. Continue loop
-                print("Invalid target. Please enter an available target\n")
-                print("Available targets: \n")
+                print("\n\tInvalid target. Please enter an available target\n")
+                print("\tAvailable targets: ")
                 for i in self.available_targets:
-                    print(i, "\n")
+                    row += "\n\t"
+                    for h in i:
+                        row += h + "  "
+                print(row)
 
     # Method for selecting locations for each piece
     def choose(self):
@@ -99,7 +105,7 @@ class Player:
 
                 # Asks for number of spaces oppropriate for indicated piece
                 piece = input(
-                    "\n" + self.name + " enter " + 
+                    "\n\t" + self.name + " enter " + 
                     str(self.sizes[x]) + " spaces for your " + 
                     self.pieces[x] + ": "
                     )
@@ -117,13 +123,13 @@ class Player:
                         # Loop through locations to check if space has been taken.
                         for t in self.locations:
                             if p in t:
-                                print("\nPieces Overlap!\n\n")
+                                print("\n\tPieces Overlap!\n\n")
                                 handy = False
                 else:
                     if len(piece) < self.sizes[x]:
-                        print("\nNot Enough Spaces Selected! Ensure entries are separated by commas.\n\n")
+                        print("\n\tNot Enough Spaces Selected! Ensure entries are separated by commas.\n\n")
                     else:
-                        print("\nToo Many Spaces Selected!\n\n")
+                        print("\n\tToo Many Spaces Selected!\n\n")
                     handy = False
                 
                 # Change num types to int
@@ -144,7 +150,7 @@ class Player:
                     if temp_num - sorted_num[n] != 1:
                         for l in range(1, len(sorted_char)):
                             if temp_let - char_ref[sorted_char[l]] != 1:
-                                print("\nInvalid entry! Cannot skip spaces.\n\n")
+                                print("\n\tInvalid entry! Cannot skip spaces.\n\n")
                                 handy = False
                                 break
                             else:
@@ -166,7 +172,7 @@ class Player:
                             check = False
                         # If Not Linear, ouput message and continue Loop
                         else:
-                            print("\nInvalid entry! Ensure selection is a linear path.\n\n")
+                            print("\n\tInvalid entry! Ensure selection is a linear path.\n\n")
                     # Check if selection is Horizontal
                     elif len(inquire) == 1:
                         inquire = pd.unique(num)
@@ -177,10 +183,10 @@ class Player:
                             check = False
                         # If Not Linear, ouput message and continue Loop
                         else:
-                            print("\nInvalid entry! Ensure selection is a linear path.\n\n")
+                            print("\n\tInvalid entry! Ensure selection is a linear path.\n\n")
                     # If Neither, ouput message and continue Loop
                     else:
-                        print("\nInvalid entry! Ensure selection is a linear path.\n\n")
+                        print("\n\tInvalid entry! Ensure selection is a linear path.\n\n")
     
     # Method for placing pieces in the dictionary
     def placement(self, new_piece, new_location):
@@ -208,7 +214,7 @@ class Board:
         self.panel_list = [[], [], [], [], [], [], [], [], [], []]
 
         # Visualization of Current Layout of indicated Player Side
-        self.header = "\n" + self.defender + "'s Side!\n\n"
+        self.header = "\t" + self.attacker 
         self.layout = ""
         
         # Import Defender Piece Locations
@@ -268,9 +274,9 @@ class Board:
         self.layout = ""
 
         for l in self.panel_list:
-            self.layout += "\n\n"
+            self.layout += "\n\n\t"
             for i in l:
-                self.layout += i + "  "
+                self.layout += i + "    "
     
     # Method verifying Hit or Miss
     def hit_miss(self, new_target):
@@ -291,18 +297,18 @@ class Board:
                     break
         if there:
             # Update Board. Call Hit functions
-            print("Hit")
+            print("\n\tHit")
             self.blowed_up()
             self.good_hit(area)
 
         elif not there:
-             print("Miss")
+             print("\n\tMiss")
     
     # Method for Updating Board with Affirmative Hits
     def blowed_up(self):
 
         # Variable for Hit indication
-        hit = "X"
+        hit = "X "
 
         # Find Board Locationand Update Layout
         if self.aim[0] == "A":
@@ -372,117 +378,173 @@ class Board:
 
         if new_piece == 1:
             self.downed.append("Carrier")
-            print("\n" + self.attacker + " sunk " + self.defender + "'s Carrier!\n")
+            print("\n\t" + self.attacker + " sank " + self.defender + "'s Carrier!\n")
         elif new_piece == 2:
             self.downed.append("Battleship")
-            print("\n" + self.attacker + " sunk " + self.defender + "'s Battleship!\n")
+            print("\n\t" + self.attacker + " sank " + self.defender + "'s Battleship!\n")
         elif new_piece == 3:
             self.downed.append("Cruiser")
-            print("\n" + self.attacker + " sunk " + self.defender + "'s Cruiser!\n")
+            print("\n\t" + self.attacker + " sank " + self.defender + "'s Cruiser!\n")
         elif new_piece == 4:
             self.downed.append("Submarine")
-            print("\n" + self.attacker + " sunk " + self.defender + "'s Submarine!\n")
+            print("\n\t" + self.attacker + " sank " + self.defender + "'s Submarine!\n")
         elif new_piece == 5:
             self.downed.append("Destroyer")
-            print("\n" + self.attacker + " sunk " + self.defender + "'s Destroyer!\n")
+            print("\n\t" + self.attacker + " sank " + self.defender + "'s Destroyer!\n")
+
+        sleep(2)
     
     # Method for handling Game Over
     def game_over(self):
 
         if len(self.downed) == 5:
-            print("\n" + self.attacker + " WINS \n\n")
+            print("\n\tGAME OVER\n\n")
+            sleep(2)
             return False
         else:
             return True
-        
 
-    
+# Game Play
+jump = "\n" * 4        
+new_game = True
+def clear():
+   os.system('cls')
+
 # Title Layout
 title = """
-BBBBBB    AAA   TTTTTTTTTTTTTTT L       EEEEEEE   SSSSS  H     H IIIIIII PPPPPP
-B     B  A   A     T       T    L       E        S     S H     H    I    P     P
-B     B A     A    T       T    L       E        S       H     H    I    P     P
-BBBBBB  AAAAAAA    T       T    L       EEEEE     SSSSS  HHHHHHH    I    PPPPPP
-B     B A     A    T       T    L       E              S H     H    I    P    
-B     B A     A    T       T    L       E        S     S H     H    I    P
-BBBBBB  A     A    T       T    LLLLLLL EEEEEEE   SSSSS  H     H IIIIIII P
-\n\n
+\tBBBBBB    AAA   TTTTTTTTTTTTTTT L       EEEEEEE   SSSSS  H     H IIIIIII PPPPPP
+\tB     B  A   A     T       T    L       E        S     S H     H    I    P     P
+\tB     B A     A    T       T    L       E        S       H     H    I    P     P
+\tBBBBBB  AAAAAAA    T       T    L       EEEEE     SSSSS  HHHHHHH    I    PPPPPP
+\tB     B A     A    T       T    L       E              S H     H    I    P    
+\tB     B A     A    T       T    L       E        S     S H     H    I    P
+\tBBBBBB  A     A    T       T    LLLLLLL EEEEEEE   SSSSS  H     H IIIIIII P
 """
 
-game_on = True
-coordinates = ""
+while new_game:
 
-# Output Title
-print(title)
+    clear()
 
-# Setup First Player Object
-first = Player("Bill")
+    game_on = True
+    wrong = True
+    coordinates = ""
+    lines = ""
 
-# Setup Second Player Object
-second = Player("Ted")
+    # Output Title
+    print(jump + title)
 
-# Output Selection
-for l in first.available_targets:
-    print(l, "\n")
+    name_1 = input(jump + "\tFirst Player. Enter a Name: ")
+    name_2 = input("\n\n\tSecond Player. Enter a Name: ")
 
-# Set First Player's Piece Locations
-first.choose()
+    if len(name_1) == 0:
+        name_1 = "Player One"
 
-print("\n")
+    if len(name_2) == 0:
+        name_2 = "Player Two"
 
-# Output Selection
-for l in first.available_targets:
-    print(l, "\n")
+    clear()
 
-# Set Second Player's Piece Locations
-second.choose()
+    # Setup First Player Object
+    first = Player(name_1)
 
-# Setup First Player Board
-board_1 = Board(first, second)
-board_1.panel()
+    # Setup Second Player Object
+    second = Player(name_2)
 
-# Setup Second Player Board
-board_2 = Board(second, first)
-board_2.panel()
+    # Output Selection Reference
+    for l in first.available_targets:
+        lines += "\n\n\t"
+        for c in l:
+            lines += c + "    "
 
-# Turn Loop for Gamplay
-while game_on:
+    print(jump + lines + "\n")
 
-    # Display Defending Board
-    print(board_1.layout)
+    # Set First Player's Piece Locations
+    first.choose()
 
-    # First Player Attack
-    open_fire = first.attack()
+    clear()
 
-    # Check Contact
-    board_1.hit_miss(open_fire)
+    # Output Selection Reference
+    print(jump + lines + "\n")
 
-    # Verification
-    #print("\n", board_1, "\n")
-    #print("\n", second, "\n")
+    # Set Second Player's Piece Locations
+    second.choose()
 
-    # Check for Game Over
-    game_on = board_1.game_over()
-    if not game_on:
-        break
+    clear()
 
-    # Display Defending Board
-    print(board_2.layout)
+    # Setup First Player Board
+    board_1 = Board(first, second)
+    board_1.panel()
 
-    # Second Player Attack
-    open_fire = second.attack()
+    # Setup Second Player Board
+    board_2 = Board(second, first)
+    board_2.panel()
 
-    # Check Contact
-    board_2.hit_miss(open_fire)
+    # Turn Loop for Gamplay
+    while game_on:
 
-    # Verification
-    #print("\n", board_2, "\n")
-    #print("\n", second, "\n")
+        # Display Defending Board
+        print(jump + board_1.header)
+        print(board_1.layout)
 
-    # Check for Game Over
-    game_on = board_2.game_over()
-    if not game_on:
-        break
+        # First Player Attack
+        open_fire = first.attack()
+
+        # Check Contact
+        board_1.hit_miss(open_fire)
+
+        # Verification
+        #print("\n", board_1, "\n")
+        #print("\n", second, "\n")
+
+        # Check for Game Over
+        game_on = board_1.game_over()
+        if not game_on:
+            clear()
+            print(jump + board_1.header + " WINS!")
+            print(board_2.layout)
+            break
+
+        sleep(1)
+        clear()
+
+        # Display Defending Board
+        print(jump + board_2.header)
+        print(board_2.layout)
+
+        # Second Player Attack
+        open_fire = second.attack()
+
+        # Check Contact
+        board_2.hit_miss(open_fire)
+
+        # Verification
+        #print("\n", board_2, "\n")
+        #print("\n", second, "\n")
+
+        # Check for Game Over
+        game_on = board_2.game_over()
+        if not game_on:
+            clear()
+            print(jump + board_2.header + " WINS!")
+            print(board_2.layout)
+            break
+
+        sleep(1)
+        clear()
+    
+    while wrong:
+        new = input(jump + "\tStart a New Game? Y/N: ")
+        new = new.lower()
+
+        if new == "y":
+            wrong = False
+            new_game = True
+        elif new == "n":
+            wrong = False
+            new_game = False
+            break
+        else:
+            print("\n\n\tEnter Y for yes N for No")
 
 # Quick Setup
 # a1, a2, a3, a4, a5
