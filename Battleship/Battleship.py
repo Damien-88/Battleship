@@ -34,6 +34,22 @@ class Player:
             ["J1", "J2", "J3", "J4", "J5", "J6", "J7", "J8", "J9", "J10"]
             ]
 
+    def __repr__(self):
+        stats = """
+            "Location Dictionary: {} \n
+            "Locations: {} \n
+            "Target: {} \n
+            "Available Targets: \n
+            """.format(
+                self.location_dict, 
+                self.locations, 
+                self.target
+            )
+        for entry in self.available_targets:
+            stats += str(entry) + "\n"
+
+        return stats
+
     # Method for selecting an available target to attack
     def attack(self):
 
@@ -42,7 +58,7 @@ class Player:
 
         while not available:
             # Take in coordinates for attack.
-            coordinates = input("\n" + first.name + " Enter the coordinates for your attack: ")
+            coordinates = input("\n" + self.name + " Enter the coordinates for your attack: ")
             self.target = coordinates.capitalize()
             
             # Loop through available targets to check if available
@@ -76,6 +92,11 @@ class Player:
                 num = []
                 handy = True
 
+                # Lists to store sorted num & char. Dict to give char a value
+                char_ref = {
+                    "A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "F": 6, "G": 7, "H": 8, "I": 9, "J": 10
+                    }
+
                 # Asks for number of spaces oppropriate for indicated piece
                 piece = input(
                     "\n" + self.name + " enter " + 
@@ -104,7 +125,34 @@ class Player:
                     else:
                         print("\nToo Many Spaces Selected!\n\n")
                     handy = False
+                
+                # Change num types to int
+                num_int = []
+                for s in num:
+                    num_int.append(int(s))
 
+                # Sort coordinate Letters & Numbers in Descending order
+                sorted_num = sorted(num_int, reverse = True)
+                sorted_char = sorted(char, reverse = True)
+
+                # Variables to hold the previous element in the loop
+                temp_num = sorted_num[0]
+                temp_let = char_ref[sorted_char[0]]
+
+                # Loop through sorted num list to check for skipped spaces
+                for n in range(1, len(sorted_num)):
+                    if temp_num - sorted_num[n] != 1:
+                        for l in range(1, len(sorted_char)):
+                            if temp_let - char_ref[sorted_char[l]] != 1:
+                                print("\nInvalid entry! Cannot skip spaces.\n\n")
+                                handy = False
+                                break
+                            else:
+                                temp_let = char_ref[sorted_char[l]]
+                        break
+                    else:
+                        temp_num = sorted_num[n]
+                
                 # Actions if all chosen spaces are available.
                 if handy:
                     # Check if selection is Vertical. 
@@ -180,6 +228,28 @@ class Board:
         # List of Sunk Pieces
         self.downed = []
 
+    def __repr__(self):
+        stats = """
+            "Hit Dictionary: {} \n
+            "Hit List: {} \n
+            "Coordinate: {} \n
+            "Carrier: {} \n
+            "Battleship: {} \n
+            "Cruiser: {} \n
+            "Submarine: {} \n
+            "Destroyer: {} \n
+            """.format(
+            self.hit_dict,
+            self.hit_list,
+            self.aim,
+            self.carrier,
+            self.battleship,
+            self.cruiser,
+            self.submarine,
+            self.destroyer
+            )
+        return stats
+
     # Method for Default Board layout
     def panel(self):
 
@@ -195,6 +265,8 @@ class Board:
     # Method for Updating Board Display
     def mark_panel(self):
 
+        self.layout = ""
+
         for l in self.panel_list:
             self.layout += "\n\n"
             for i in l:
@@ -204,40 +276,48 @@ class Board:
     def hit_miss(self, new_target):
 
         self.aim = new_target
+        there = False
 
         # Loop trough list of piece locations.
         for loc in self.hit_list:
             # Check if Piece is in Target location
-            if self.aim in loc:
-                # If it is Remove Space from hit_list.
-                self.hit_list.pop(loc.index(self.aim))
-                print("Hit")
-                break
-            else:
-                print("Miss")
-
-            # Find coinsiding Piece Remove Space from it's list.
-            # Check if any Spaces are left for Piece. Call Sank if none
-            if loc == 0:
-                self.carrier.remove(self.aim)
-                if len(self.carrier) == 0:
-                    self.sank("Carrier")
-            elif loc == 1:
-                self.battleship.remove(self.aim)
-                if len(self.battleship) == 0:
-                    self.sank("Battleship")
-            elif loc == 2:
-                self.cruiser.remove(self.aim)
-                if len(self.cruiser) == 0:
-                    self.sank("Cruiser")
-            elif loc == 3:
-                self.submarine.remove(self.aim)
-                if len(self.submarine) == 0:
-                    self.sank("Submarine")
-            elif loc == 4:
-                self.destroyer.remove(self.aim)
-                if len(self.destroyer) == 0:
-                    self.sank("Destroyer")
+            for l in loc:
+                if self.aim == l:
+                    # If it is Remove Space from hit_list.
+                    there = True
+                    loc.remove(l)
+                    print("Hit")
+                    # Find coinsiding Piece Remove Space from it's list.
+                    # Check if any Spaces are left for Piece. Call Sank if none
+                    if loc == 0:
+                        self.carrier.remove(self.aim)
+                        self.hit_dict["Carrier"].remove(self.aim)
+                        if len(self.carrier["Carrier"]) == 0:
+                            self.sank("Carrier")
+                    elif loc == 1:
+                        self.battleship.remove(self.aim)
+                        self.hit_dict["Battleship"].remove(self.aim)
+                        if len(self.battleship["Battleship"]) == 0:
+                            self.sank("Battleship")
+                    elif loc == 2:
+                        self.cruiser.remove(self.aim)
+                        self.hit_dict["Cruiser"].remove(self.aim)
+                        if len(self.cruiser["Cruiser"]) == 0:
+                            self.sank("Cruiser")
+                    elif loc == 3:
+                        self.submarine.remove(self.aim)
+                        self.hit_dict["Submarine"].remove(self.aim)
+                        if len(self.submarine["Submarine"]) == 0:
+                            self.sank("Submarine")
+                    elif loc == 4:
+                        self.destroyer.remove(self.aim)
+                        self.hit_dict["Destroyer"].remove(self.aim)
+                        if len(self.destroyer["Destroyer"]) == 0:
+                            self.sank("Destroyer")
+                    self.blowed_up()
+                    break
+        if not there:
+                     print("Miss")
     
     # Method for Updating Board Layout with Affirmative Hits
     def blowed_up(self):
@@ -273,34 +353,33 @@ class Board:
     # Method for handling Sunken Piece
     def sank(self, new_piece):
 
-            if new_piece == "Carrier":
-                self.downed.append("Carrier")
-                print("\n" + self.attacker + " sunk " + self.defender + "'s Carrier!\n\n")
-            elif new_piece == "Battleship":
-                self.downed.append("Battleship")
-                print("\n" + self.attacker + " sunk " + self.defender + "'s Battleship!\n\n")
-            elif new_piece == "Cruiser":
-                self.downed.append("Cruiser")
-                print("\n" + self.attacker + " sunk " + self.defender + "'s Cruiser!\n\n")
-            elif new_piece == "Submarine":
-                self.downed.append("Submarine")
-                print("\n" + self.attacker + " sunk " + self.defender + "'s Submarine!\n\n")
-            elif new_piece == "Destroyer":
-                self.downed.append("Destroyer")
-                print("\n" + self.attacker + " sunk " + self.defender + "'s Destroyer!\n\n")
-
-            if len(self.downed) == 5:
-                self.game_over()
+        if new_piece == "Carrier":
+            self.downed.append("Carrier")
+            print("\n" + self.attacker + " sunk " + self.defender + "'s Carrier!\n\n")
+        elif new_piece == "Battleship":
+            self.downed.append("Battleship")
+            print("\n" + self.attacker + " sunk " + self.defender + "'s Battleship!\n\n")
+        elif new_piece == "Cruiser":
+            self.downed.append("Cruiser")
+            print("\n" + self.attacker + " sunk " + self.defender + "'s Cruiser!\n\n")
+        elif new_piece == "Submarine":
+            self.downed.append("Submarine")
+            print("\n" + self.attacker + " sunk " + self.defender + "'s Submarine!\n\n")
+        elif new_piece == "Destroyer":
+            self.downed.append("Destroyer")
+            print("\n" + self.attacker + " sunk " + self.defender + "'s Destroyer!\n\n")
+        
+        if len(self.downed) == 5:
+            self.game_over()
     
     # Method for handling Game Over
     def game_over(self):
 
-        if len(self.downed) > 0:
+        if len(self.downed) == 5:
             print("\n" + self.attacker + " WINS")
+            return False
         else:
-            print("\n" + self.defender + " WINS")
-
-        return False
+            return True
         
 
     
@@ -313,6 +392,7 @@ BBBBBB  AAAAAAA    T       T    L       EEEEE     SSSSS  HHHHHHH    I    PPPPPP
 B     B A     A    T       T    L       E              S H     H    I    P    
 B     B A     A    T       T    L       E        S     S H     H    I    P
 BBBBBB  A     A    T       T    LLLLLLL EEEEEEE   SSSSS  H     H IIIIIII P
+\n\n
 """
 
 game_on = True
@@ -327,10 +407,18 @@ first = Player("Bill")
 # Setup Second Player Object
 second = Player("Ted")
 
+# Output Selection
+for l in first.available_targets:
+    print(l, "\n")
+
 # Set First Player's Piece Locations
 first.choose()
 
 print("\n")
+
+# Output Selection
+for l in first.available_targets:
+    print(l, "\n")
 
 # Set Second Player's Piece Locations
 second.choose()
@@ -345,13 +433,9 @@ board_2.panel()
 
 # Turn Loop for Gamplay
 while game_on:
-     
+
     # Display Defending Board
     print(board_1.layout)
-
-    # Check
-    print("\n", board_1.carrier)
-    print("\n", board_1.hit_list)
 
     # First Player Attack
     open_fire = first.attack()
@@ -359,19 +443,13 @@ while game_on:
     # Check Contact
     board_1.hit_miss(open_fire)
 
-    #Check
-    print("\n", board_1.carrier)
-    print("\n", board_1.hit_list)
+    print("\n", board_1, "\n")
 
     # Check for Game Over
-    game_on = board_1.game_over()
+    game_on = board_2.game_over()
 
     # Display Defending Board
     print(board_2.layout)
-
-    # Check
-    print("\n", board_2.carrier)
-    print("\n", board_2.hit_list)
 
     # Second Player Attack
     open_fire = second.attack()
@@ -379,12 +457,10 @@ while game_on:
     # Check Contact
     board_2.hit_miss(open_fire)
 
-    # Check
-    print("\n", board_2.carrier)
-    print("\n", board_2.hit_list)
+    print("\n", board_2, "\n")
 
     # Check for Game Over
-    game_on = board_2.game_over()
+    game_on = board_1.game_over()
 
 # a1, a2, a3, a4, a5
 # b7, c7, d7, e7
